@@ -13,10 +13,10 @@ ApplicationListenerMethodAdapter cause BeanCreationNotAllowedException
     
   > it did not implements ApplicationListener when use annotation
   
-3.FeignContext destroy
+3.NamedContext destroy
 
   it will invoke close method and publish close event, and parentContext will also publish close
-  event, `ApplicationListenerMethodAdapter` work will invoke `conetext#getBean`
+  event, `ApplicationListenerMethodAdapter` working will invoke `conetext#getBean`
 
 ```java
 Exception thrown from ApplicationListener handling ContextClosedEvent

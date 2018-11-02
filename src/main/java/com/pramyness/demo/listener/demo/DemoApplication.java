@@ -3,19 +3,15 @@ package com.pramyness.demo.listener.demo;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.cloud.openfeign.FeignContext;
+import org.springframework.cloud.context.named.NamedContextFactory;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.EnableAspectJAutoProxy;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.EventListener;
 
-@EnableAspectJAutoProxy
-@EnableDiscoveryClient
-@EnableFeignClients
+
 @SpringBootApplication
 public class DemoApplication {
 
@@ -26,7 +22,7 @@ public class DemoApplication {
 
     class Listener implements DisposableBean {
 
-        @EventListener
+        @EventListener(ContextClosedEvent.class)
         public void close(ApplicationEvent event) {
             System.out.println("---------------invoke listener"+event );
         }
@@ -38,23 +34,21 @@ public class DemoApplication {
     }
 
 
-    //1.insure FeignContext initialize before listener
-    //2.insure FeignContext destroy after listener
+    //1.insure NamedContextFactory initialize before listener
+    //2.insure NamedContextFactory destroy after listener
     @Bean
-    public Listener listener(FeignContext context) {
-        //3.initialize client
-        context.getInstance("BASE-SERVICE",Client.class);
+    public Listener listener() {
+        //3.initialize context values
+        namedContextFactory().getInstance("demo",DemoApplication.class);
         return new Listener();
     }
 
-//    class Listener implements ApplicationListener<ContextClosedEvent> {
-//
-//        @Override
-//        public void onApplicationEvent(@NonNull ContextClosedEvent event) {
-//            System.out.println("----------------------close");
-//        }
-//    }
+    @Bean
+    public NamedContextFactory<NamedContextFactory.Specification> namedContextFactory() {
+        return new NamedContextFactory<NamedContextFactory.Specification>(Config.class
+        ,"demo","demo") {};
+    }
 
-    @FeignClient("BASE-SERVICE")
-    interface Client {}
+    @Configuration
+    class Config{}
 }
